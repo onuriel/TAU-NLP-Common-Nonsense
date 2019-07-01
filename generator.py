@@ -69,7 +69,7 @@ def main():
     graph2text = GraphToText(decoder, encoder, optimizer)
     generator = NegativeSamplesGenerator(graph2text, dataset)
     random_sequences, random_sentences = generator.generate_semi_random_sentences(2000)
-    with open('checkpoint-4.txt', 'w', encoding='utf-8') as f:
+    with open('generated_sentences.txt', 'w', encoding='utf-8') as f:
         for i in range(len(random_sentences)):
             f.write(random_sequences[i] + "\n" + random_sentences[i] + '\n')
 
