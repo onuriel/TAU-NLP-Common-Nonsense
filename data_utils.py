@@ -1,6 +1,7 @@
 import json
 from data.uri import *
 
+import logging
 import pandas as pd
 import argparse
 
@@ -142,8 +143,12 @@ if __name__ == '__main__':
     parser.add_argument('-pd', '--processed_dataset', default=DEFAULT_PROCESSED_DATASET_PATH,
                         help='Path to processed ConceptNet dataset')
     parser.add_argument('--no_dataset', action='store_true', help='Don\'t process the dataset')
+
+    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
     args = parser.parse_args()
-    print('Starting with args: {}'.format(vars(args)))
+    logging.basicConfig(format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s',
+                        level=logging.DEBUG if args.verbose else logging.INFO)
+    logging.info('Starting with args: {}'.format(vars(args)))
 
     #uncomment this to create the training set
     # save_sequence_to_sentence_dataset()
