@@ -2,6 +2,12 @@ import json
 from data.uri import *
 
 import pandas as pd
+import argparse
+
+VERSION = '0.0.1'
+CONCEPTNET_VERSION = '5.7.0'
+DEFAULT_DATASET_PATH = 'data/conceptnet-assertions-{}.csv.gz'.format(CONCEPTNET_VERSION)
+DEFAULT_PROCESSED_DATASET_PATH = 'out/conceptnet-{}.h5'.format(CONCEPTNET_VERSION)
 
 FILEPATH = "data/conceptnet-assertions-5.6.0.csv.gz"
 NUMBERBATCH = 'weights/conceptnet-numberbatch.h5'
@@ -130,6 +136,15 @@ class LanguageIndex():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Preprocessing ConceptNet')
+    parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=VERSION))
+    parser.add_argument('-d', '--dataset', default=DEFAULT_DATASET_PATH, help='Path to ConceptNet dataset')
+    parser.add_argument('-pd', '--processed_dataset', default=DEFAULT_PROCESSED_DATASET_PATH,
+                        help='Path to processed ConceptNet dataset')
+    parser.add_argument('--no_dataset', action='store_true', help='Don\'t process the dataset')
+    args = parser.parse_args()
+    print('Starting with args: {}'.format(vars(args)))
+
     #uncomment this to create the training set
     # save_sequence_to_sentence_dataset()
     #creates the dataset to generate sentences from
