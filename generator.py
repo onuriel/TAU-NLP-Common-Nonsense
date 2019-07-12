@@ -57,7 +57,7 @@ class NegativeSamplesGenerator(object):
 
 def main():
     tf.enable_eager_execution()
-    dataset = data_utils.load_normalized_dataset()
+    dataset = data_loader.load_normalized_dataset()
     input_sents, target_sents = data_loader.load_sequence_to_sentence_dataset()
     inp_lang = data_utils.LanguageIndex(input_sents)
     targ_lang = data_utils.LanguageIndex(target_sents)
