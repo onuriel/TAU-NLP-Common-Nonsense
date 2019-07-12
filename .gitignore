@@ -1,0 +1,8 @@
+#Ignore IDE and compiled files
+.idea/*
+__pycache__
+*.pyc
+#Ignore input and output files
+out/*
+*.h5
+*.gz
