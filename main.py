@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.contrib.learn.python.learn.estimators._sklearn import train_test_split
 
 import data_utils
+import data_loader
 from Model import Encoder, Decoder, GraphToText
 
 BATCH_SIZE = 64
@@ -36,7 +37,7 @@ def main():
     # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
     # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     # Creating training and validation sets using an 80-20 split
-    input_sents, target_sents = data_utils.load_sequence_to_sentence_dataset()
+    input_sents, target_sents = data_loader.load_sequence_to_sentence_dataset()
     inp_lang = data_utils.LanguageIndex(input_sents)
     targ_lang = data_utils.LanguageIndex(target_sents)
     create_train_val_dataset(input_sents, target_sents, inp_lang, targ_lang)

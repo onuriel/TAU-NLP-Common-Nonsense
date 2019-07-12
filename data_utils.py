@@ -1,6 +1,7 @@
+import data_constants
+import data_loader
+import data.uri as uri_helper
 import json
-from data.uri import *
-
 import sys
 import logging
 import pandas as pd
@@ -8,12 +9,6 @@ import argparse
 import pathlib
 
 VERSION = '0.0.1'
-CONCEPTNET_VERSION = '5.7.0'
-NUMBERBATCH_VERSION = '17.06'
-DEFAULT_DATASET_PATH = 'data/conceptnet-assertions-{}.csv.gz'.format(CONCEPTNET_VERSION)
-DEFAULT_NORMALIZED_DATASET_PATH = 'out/normalized_conceptnet-{}.h5'.format(CONCEPTNET_VERSION)
-DEFAULT_SEQ2SENT_DATASET_PATH = 'out/seq2sent_conceptnet-{}.h5'.format(CONCEPTNET_VERSION)
-DEFAULT_NUMBERBATCH_PATH = 'data/conceptnet-numberbatch-mini-{}.h5'.format(NUMBERBATCH_VERSION)
 
 
 class _PreProcessor:
@@ -57,7 +52,7 @@ class _PreProcessor:
             if override or not self.normalized_dataset_path.exists():
                 self.make_normalized_dataset(override, filter_lines)
             else:
-                self.normalized_df = load_normalized_dataset(self.normalized_dataset_path)
+                self.normalized_df = data_loader.load_normalized_dataset(self.normalized_dataset_path)
 
         inputs, targets = self._create_input_and_target_from_df(self.normalized_df)
         inputs.to_hdf(self.seq2sent_dataset_path, 'inputs', mode='w')
@@ -72,12 +67,12 @@ class _PreProcessor:
     @staticmethod
     def _normalize_df(df):
         new_df = pd.DataFrame()
-        new_df['relation'] = df['relation'].apply(uri_to_label)
-        new_df['language'] = df['uri'].apply(get_uri_language)
-        new_df['subject'] = df['subject'].apply(uri_to_label)
-        new_df['subject_lang'] = df['subject'].apply(get_uri_language)
-        new_df['object'] = df['object'].apply(uri_to_label)
-        new_df['object_lang'] = df['object'].apply(get_uri_language)
+        new_df['relation'] = df['relation'].apply(uri_helper.uri_to_label)
+        new_df['language'] = df['uri'].apply(uri_helper.get_uri_language)
+        new_df['subject'] = df['subject'].apply(uri_helper.uri_to_label)
+        new_df['subject_lang'] = df['subject'].apply(uri_helper.get_uri_language)
+        new_df['object'] = df['object'].apply(uri_helper.uri_to_label)
+        new_df['object_lang'] = df['object'].apply(uri_helper.get_uri_language)
         new_df['data'] = df['data'].apply(json.loads)
         new_df['dataset'] = new_df['data'].apply(lambda x: x['dataset'])
         new_df['weight'] = new_df['data'].apply(lambda x: x['weight'])
@@ -104,24 +99,9 @@ class _PreProcessor:
         sys.exit(1)
 
 
-def load_normalized_dataset(h5_path=DEFAULT_NORMALIZED_DATASET_PATH):
-    return pd.read_hdf(h5_path, 'data')
-
-
-def load_sequence_to_sentence_dataset(h5_path=DEFAULT_SEQ2SENT_DATASET_PATH):
-    return pd.read_hdf(h5_path, 'inputs'), pd.read_hdf(h5_path, 'targets')
-
-
-def load_numberbatch(h5_path=DEFAULT_NUMBERBATCH_PATH, lang=None):
-    df = pd.read_hdf(h5_path)
-    if lang:
-        df = df[df.index.map(lambda x: get_uri_language(x) == lang)]
-    return df
-
-
 def create_langauge_index(lang='en'):
-    embeddings = load_numberbatch(lang=lang)
-    words = embeddings.index.map(uri_to_label).values
+    embeddings = data_loader.load_numberbatch(lang=lang)
+    words = embeddings.index.map(uri_helper.uri_to_label).values
     return LanguageIndex(words)
 
 
@@ -158,11 +138,12 @@ def positive_int(value):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Preprocessing ConceptNet')
     parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=VERSION))
-    parser.add_argument('-d', '--dataset', default=DEFAULT_DATASET_PATH, help='Path to ConceptNet dataset')
-    parser.add_argument('-nd', '--normalized_dataset', default=DEFAULT_NORMALIZED_DATASET_PATH,
+    parser.add_argument('-d', '--dataset', default=data_constants.DEFAULT_DATASET_PATH,
+                        help='Path to ConceptNet dataset')
+    parser.add_argument('-nd', '--normalized_dataset', default=data_constants.DEFAULT_NORMALIZED_DATASET_PATH,
                         help='Path to normalized ConceptNet dataset')
     parser.add_argument('--no_normalize', action='store_true', help='Don\'t normalize the dataset')
-    parser.add_argument('-sd', '--seq2sent_dataset', default=DEFAULT_SEQ2SENT_DATASET_PATH,
+    parser.add_argument('-sd', '--seq2sent_dataset', default=data_constants.DEFAULT_SEQ2SENT_DATASET_PATH,
                         help='Path to seq2sent ConceptNet dataset')
     parser.add_argument('--no_seq2sent', action='store_true', help='Don\'t create seq2sent dataset')
     parser.add_argument('--filter_lines', default=1, type=positive_int,

@@ -1,6 +1,6 @@
 import data_utils
+import data_loader
 from Model import Encoder, Decoder, GraphToText
-from data_utils import load_normalized_dataset
 import tensorflow as tf
 import numpy as np
 import pandas as pd
@@ -57,8 +57,8 @@ class NegativeSamplesGenerator(object):
 
 def main():
     tf.enable_eager_execution()
-    dataset = load_normalized_dataset()
-    input_sents, target_sents = data_utils.load_sequence_to_sentence_dataset()
+    dataset = data_utils.load_normalized_dataset()
+    input_sents, target_sents = data_loader.load_sequence_to_sentence_dataset()
     inp_lang = data_utils.LanguageIndex(input_sents)
     targ_lang = data_utils.LanguageIndex(target_sents)
     embedding_dim = 256
