@@ -33,7 +33,7 @@ def create_train_val_dataset(input_sents, target_sents, inp_lang, targ_lang):
 
 
 def main():
-    tf.enable_eager_execution()
+    tf.compat.v1.enable_eager_execution()
     # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
     # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     # Creating training and validation sets using an 80-20 split
@@ -67,7 +67,7 @@ def main():
     encoder = Encoder(embedding_dim, units, inp_lang)
     decoder = Decoder(embedding_dim, units, targ_lang)
 
-    optimizer = tf.train.AdamOptimizer()
+    optimizer = tf.compat.v1.train.AdamOptimizer()
     model = GraphToText(decoder, encoder, optimizer)
     # model.train(train_dataset, epochs=10, batch_size=BATCH_SIZE)
     for i in range(6):

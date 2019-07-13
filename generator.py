@@ -56,7 +56,7 @@ class NegativeSamplesGenerator(object):
 
 
 def main():
-    tf.enable_eager_execution()
+    tf.compat.v1.enable_eager_execution()
     dataset = data_loader.load_normalized_dataset()
     input_sents, target_sents = data_loader.load_sequence_to_sentence_dataset()
     inp_lang = data_utils.LanguageIndex(input_sents)
@@ -65,7 +65,7 @@ def main():
     units = 1024
     encoder = Encoder(embedding_dim, units, inp_lang)
     decoder = Decoder(embedding_dim, units, targ_lang)
-    optimizer = tf.train.AdamOptimizer()
+    optimizer = tf.compat.v1.train.AdamOptimizer()
     graph2text = GraphToText(decoder, encoder, optimizer)
     generator = NegativeSamplesGenerator(graph2text, dataset)
     random_sequences, random_sentences = generator.generate_semi_random_sentences(2000)
