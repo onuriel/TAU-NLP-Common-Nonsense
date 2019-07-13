@@ -5,54 +5,39 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 
-class NegativeSamplesGenerator(object):
 
+class NegativeSamplesGenerator(object):
     def __init__(self, graph_to_text, dataset):
         self.graph2text = graph_to_text
         self.dataset = dataset
 
-    def generate_random_sequences(self, num_of_sequences, random_state=None):
-        subject_random_state, objects_random_state = None, None
-        if random_state:
-            subject_random_state = random_state + 1
-            objects_random_state = random_state - 1
-        subjects = self.dataset['subject'].sample(num_of_sequences, random_state=subject_random_state).reset_index(drop=True)
-        relations = self.dataset['relation'].sample(num_of_sequences, random_state=random_state).reset_index(drop=True)
-        objects = self.dataset['object'].sample(num_of_sequences, random_state=objects_random_state).reset_index(drop=True)
-        return subjects + " " + relations + " " + objects
-
     def generate_random_sentences(self, num_of_sequences, random_state=None):
-        word_sequences = self.generate_random_sequences(num_of_sequences, random_state=random_state)
+        word_sequences = self._generate_random_sequences([['subject'], ['relation'], ['object']], num_of_sequences,
+                                                         random_state)
         return word_sequences, self.graph2text.generate_sentences_from_word_sequences(word_sequences)
 
-    def generate_semi_random_sequences(self, num_of_sequences):
+    def generate_semi_random_sentences(self, num_of_sequences, random_state=None):
+        word_sequences = self._generate_semi_random_sequences(num_of_sequences, random_state)
+        return word_sequences, self.graph2text.generate_sentences_from_word_sequences(word_sequences)
+
+    def _generate_semi_random_sequences(self, num_of_sequences, random_state):
         probs = np.random.randint(0, 3, num_of_sequences)
-        zeros = (probs == 0).sum()
-        ones = (probs == 1).sum()
-        twos = (probs == 2).sum()
-        return pd.concat((self.generate_odd_object_sequences(zeros), self.generate_odd_relation_sequences(ones),
-                          self.generate_odd_subject_sequences(twos)), ignore_index=True)
+        odd_subject = self._generate_random_sequences([['relation', 'object'], ['subject']], (probs == 0).sum(),
+                                                      random_state)
+        odd_relation = self._generate_random_sequences([['subject', 'object'], ['relation']], (probs == 1).sum(),
+                                                       random_state + 2 if random_state else None)
+        odd_object = self._generate_random_sequences([['subject', 'relation'], ['object']], (probs == 2).sum(),
+                                                     random_state + 4 if random_state else None)
+        return pd.concat((odd_subject, odd_relation, odd_object), ignore_index=True)
 
-    def generate_odd_object_sequences(self, num_of_sequences):
-        pairs = self.dataset[['subject', 'relation']].sample(num_of_sequences).reset_index()
-        objects = self.dataset['object'].sample(num_of_sequences).reset_index()
-        return pairs['subject'] + " " + pairs['relation'] + " " + objects['object']
-
-    def generate_odd_relation_sequences(self, num_of_sequences):
-        pairs = self.dataset[['subject', 'object']].sample(num_of_sequences).reset_index()
-        relation = self.dataset['relation'].sample(num_of_sequences).reset_index()
-        return pairs['subject'] + " " + relation['relation'] + " " + pairs['object']
-
-    def generate_odd_subject_sequences(self, num_of_sequences):
-        pairs = self.dataset[['object', 'relation']].sample(num_of_sequences).reset_index()
-        subjects = self.dataset['subject'].sample(num_of_sequences).reset_index()
-        return subjects['subject'] + " " + pairs['relation'] + " " + pairs['object']
-
-
-    def generate_semi_random_sentences(self, num_of_sequences):
-        word_sequences = self.generate_semi_random_sequences(num_of_sequences)
-        return word_sequences, self.graph2text.generate_sentences_from_word_sequences(word_sequences)
-
+    def _generate_random_sequences(self, list_of_keys_list, num_of_sequences, random_state):
+        res_dict = {}
+        for keys_list in list_of_keys_list:
+            sampled_vals = self.dataset[keys_list].sample(num_of_sequences, random_state=random_state).reset_index()
+            res_dict.update({key: sampled_vals[key] for key in keys_list})
+            if random_state:
+                random_state += 1
+        return res_dict['subject'] + ' ' + res_dict['relation'] + ' ' + res_dict['object']
 
 
 def main():
