@@ -31,22 +31,22 @@ class NegativeSamplesGenerator(object):
         ones = (probs == 1).sum()
         twos = (probs == 2).sum()
         return pd.concat((self.generate_odd_object_sequences(zeros), self.generate_odd_relation_sequences(ones),
-                          self.generate_odd_subject_sequences(twos)))
+                          self.generate_odd_subject_sequences(twos)), ignore_index=True)
 
     def generate_odd_object_sequences(self, num_of_sequences):
-        pairs = self.dataset[['subject', 'relation']].sample(num_of_sequences)
-        objects = self.dataset['object'].sample(num_of_sequences)
-        return pairs['subject'] + " " + pairs['relation'] + " " + objects
+        pairs = self.dataset[['subject', 'relation']].sample(num_of_sequences).reset_index()
+        objects = self.dataset['object'].sample(num_of_sequences).reset_index()
+        return pairs['subject'] + " " + pairs['relation'] + " " + objects['object']
 
     def generate_odd_relation_sequences(self, num_of_sequences):
-        pairs = self.dataset[['subject', 'object']].sample(num_of_sequences)
-        relation = self.dataset['relation'].sample(num_of_sequences)
-        return pairs['subject'] + " " + relation + " " + pairs['object']
+        pairs = self.dataset[['subject', 'object']].sample(num_of_sequences).reset_index()
+        relation = self.dataset['relation'].sample(num_of_sequences).reset_index()
+        return pairs['subject'] + " " + relation['relation'] + " " + pairs['object']
 
     def generate_odd_subject_sequences(self, num_of_sequences):
-        pairs = self.dataset[['object', 'relation']].sample(num_of_sequences)
-        subjects = self.dataset['subject'].sample(num_of_sequences)
-        return subjects + " " + pairs['relation'] + " " + pairs['object']
+        pairs = self.dataset[['object', 'relation']].sample(num_of_sequences).reset_index()
+        subjects = self.dataset['subject'].sample(num_of_sequences).reset_index()
+        return subjects['subject'] + " " + pairs['relation'] + " " + pairs['object']
 
 
     def generate_semi_random_sentences(self, num_of_sequences):
