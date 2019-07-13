@@ -3,7 +3,7 @@ from tensorflow.contrib.learn.python.learn.estimators._sklearn import train_test
 
 import data_utils
 import data_loader
-from Model import Encoder, Decoder, GraphToText
+import Model
 
 BATCH_SIZE = 64
 
@@ -64,11 +64,11 @@ def main():
     embedding_dim = 256
     units = 1024
     train_dataset, val_dataset = create_train_val_dataset(input_sents, target_sents, inp_lang, targ_lang)
-    encoder = Encoder(embedding_dim, units, inp_lang)
-    decoder = Decoder(embedding_dim, units, targ_lang)
+    encoder = Model.Encoder(embedding_dim, units, inp_lang)
+    decoder = Model.Decoder(embedding_dim, units, targ_lang)
 
     optimizer = tf.compat.v1.train.AdamOptimizer()
-    model = GraphToText(decoder, encoder, optimizer)
+    model = Model.GraphToText(decoder, encoder, optimizer)
     # model.train(train_dataset, epochs=10, batch_size=BATCH_SIZE)
     for i in range(6):
         model.load_from_checkpoint('ckpt-'+str(i))

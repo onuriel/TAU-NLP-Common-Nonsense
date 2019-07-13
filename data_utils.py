@@ -1,14 +1,13 @@
 import data_constants
 import data_loader
 import data.uri as uri_helper
+import utils
 import json
 import sys
 import logging
 import pandas as pd
 import argparse
 import pathlib
-
-VERSION = '0.0.1'
 
 
 class _PreProcessor:
@@ -128,16 +127,10 @@ class LanguageIndex:
             self.idx2word[index + 1] = word
 
 
-def positive_int(value):
-    ivalue = int(value)
-    if ivalue <= 0:
-        raise argparse.ArgumentTypeError('{} is not a positive integer '.format(ivalue))
-    return ivalue
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Preprocessing ConceptNet')
-    parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=VERSION))
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s {version}'.format(version=data_constants.VERSION))
     parser.add_argument('-d', '--dataset', default=data_constants.DEFAULT_DATASET_PATH,
                         help='Path to ConceptNet dataset')
     parser.add_argument('-nd', '--normalized_dataset', default=data_constants.DEFAULT_NORMALIZED_DATASET_PATH,
@@ -146,7 +139,7 @@ if __name__ == '__main__':
     parser.add_argument('-sd', '--seq2sent_dataset', default=data_constants.DEFAULT_SEQ2SENT_DATASET_PATH,
                         help='Path to seq2sent ConceptNet dataset')
     parser.add_argument('--no_seq2sent', action='store_true', help='Don\'t create seq2sent dataset')
-    parser.add_argument('--filter_lines', default=1, type=positive_int,
+    parser.add_argument('--filter_lines', default=1, type=utils.positive_int,
                         help='For Dev/QA purposes only. Filter lines, only read 1/X lines from the dataset')
     parser.add_argument('--override', action='store_true', help='Override outputs if already exist')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
@@ -160,3 +153,4 @@ if __name__ == '__main__':
         preprocessor.make_normalized_dataset(args.override, args.filter_lines)
     if not args.no_seq2sent:
         preprocessor.make_seq2sent_dataset(args.override, args.filter_lines)
+    logging.info('Done')
