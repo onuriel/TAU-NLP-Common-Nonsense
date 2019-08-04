@@ -16,37 +16,29 @@ class NegativeSamplesGenerator:
         self.graph2text = graph_to_text
         self.dataset = dataset
 
-    def generate_random_sentences(self, num_of_sequences, semi, random_state):
-        if semi:
-            word_sequences = self._generate_semi_random_sequences(num_of_sequences, random_state)
-        else:
-            word_sequences = self._generate_random_sequences([['subject'], ['relation'], ['object']], num_of_sequences,
-                                                             random_state)
+    def generate_random_sentences(self, num_of_sequences, random_state):
+        word_sequences = self.generate_with_same_relation(num_of_sequences, random_state)
         return word_sequences, self.graph2text.generate_sentences_from_word_sequences(word_sequences)
 
-    def _generate_semi_random_sequences(self, num_of_sequences, random_state):
-        probs = np.random.randint(0, 3, num_of_sequences)
-        odd_subject = self._generate_random_sequences([['relation', 'object'], ['subject']], (probs == 0).sum(),
-                                                      random_state)
-        odd_relation = self._generate_random_sequences([['subject', 'object'], ['relation']], (probs == 1).sum(),
-                                                       random_state + 2 if random_state else None)
-        odd_object = self._generate_random_sequences([['subject', 'relation'], ['object']], (probs == 2).sum(),
-                                                     random_state + 4 if random_state else None)
-        return pd.concat((odd_subject, odd_relation, odd_object), ignore_index=True)
+    def generate_with_same_relation(self, num_of_sequences, random_state):
+        # the relations might be biased - so it might make sense to sample them by unique
+        relations = self.dataset['relation'].sample(num_of_sequences, random_state=random_state)
+        result = []
+        for relation in relations:
+            subject = \
+            self.dataset[self.dataset['relation'] == relation]['subject'].sample(1, random_state=random_state).item()
+            object = \
+                self.dataset[(self.dataset['relation'] == relation) & (self.dataset['subject'] != subject)][
+                    'object'].sample(1, random_state=random_state).item()
 
-    def _generate_random_sequences(self, list_of_keys_list, num_of_sequences, random_state):
-        logging.debug('Generating {} sequences with random_state={} and keys list {}'.format(
-            num_of_sequences, random_state, list_of_keys_list))
-        res_dict = {}
-        for keys_list in list_of_keys_list:
-            sampled_vals = self.dataset[keys_list].sample(num_of_sequences, random_state=random_state).reset_index()
-            res_dict.update({key: sampled_vals[key] for key in keys_list})
-            if random_state:
-                random_state += 1
-        return res_dict['subject'] + ' ' + res_dict['relation'] + ' ' + res_dict['object']
+            result.append(subject + " " + relation + " " + object)
+        return result
 
 
 if __name__ == '__main__':
+    # import os
+    # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     parser = argparse.ArgumentParser(description='Random Sentences Generator')
     parser.add_argument('--version', action='version',
                         version='%(prog)s {version}'.format(version=data_constants.VERSION))
@@ -59,7 +51,6 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--num_of_sentences', type=utils.positive_int, default=2000,
                         help='Number of sentences to generate')
     parser.add_argument('-r', '--random_state', type=int, help='Random state (seed) to use')
-    parser.add_argument('-s', '--semi_random', action='store_true', help='Generate semi-random sentences')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
     args = parser.parse_args()
     # Suppressing absl logger - see https://github.com/tensorflow/tensorflow/issues/26691#issuecomment-507420022
@@ -85,8 +76,8 @@ if __name__ == '__main__':
     optimizer = tf.compat.v1.train.AdamOptimizer()
     graph2text = Model.GraphToText(decoder, encoder, optimizer)
     generator = NegativeSamplesGenerator(graph2text, dataset)
-    logging.info('Generating {} {}random sentences'.format(args.num_of_sentences, 'semi ' if args.semi_random else ''))
-    random_sequences, random_sentences = generator.generate_random_sentences(args.num_of_sentences, args.semi_random,
+    logging.info('Generating {} random sentences'.format(args.num_of_sentences))
+    random_sequences, random_sentences = generator.generate_random_sentences(args.num_of_sentences,
                                                                              args.random_state)
     logging.info('Done generating, will write outputs to {}'.format(args.out))
     with open(args.out, 'w', encoding='utf-8') as f:
