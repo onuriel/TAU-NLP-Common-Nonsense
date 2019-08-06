@@ -5,7 +5,6 @@ import utils
 import Model
 import tensorflow as tf
 import numpy as np
-import pandas as pd
 import logging
 import absl.logging
 import argparse
@@ -25,13 +24,11 @@ class NegativeSamplesGenerator:
         relations = self.dataset['relation'].sample(num_of_sequences, random_state=random_state)
         result = []
         for relation in relations:
-            subject = \
-            self.dataset[self.dataset['relation'] == relation]['subject'].sample(1, random_state=random_state).item()
-            object = \
-                self.dataset[(self.dataset['relation'] == relation) & (self.dataset['subject'] != subject)][
-                    'object'].sample(1, random_state=random_state).item()
-
-            result.append(subject + " " + relation + " " + object)
+            rel_subject = self.dataset.query('relation=="{}"'.format(relation))['subject']\
+                .sample(1, random_state=random_state).item()
+            rel_object = self.dataset.query('relation=="{}" and subject!="{}"'.format(relation, rel_subject))['object']\
+                .sample(1, random_state=random_state).item()
+            result.append(rel_subject + " " + relation + " " + rel_object)
         return result
 
 
