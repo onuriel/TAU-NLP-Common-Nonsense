@@ -10,7 +10,7 @@ import argparse
 import pathlib
 
 
-class _PreProcessor:
+class PreProcessor:
     def __init__(self, dataset, normalized_dataset_path, seq2sent_dataset_path):
         self.dataset = pathlib.Path(dataset)
         self.normalized_dataset_path = pathlib.Path(normalized_dataset_path)
@@ -119,7 +119,7 @@ if __name__ == '__main__':
                         level=logging.DEBUG if args.verbose else logging.INFO)
     logging.info('Starting with args: {}'.format(vars(args)))
 
-    preprocessor = _PreProcessor(args.dataset, args.normalized_dataset, args.seq2sent_dataset)
+    preprocessor = PreProcessor(args.dataset, args.normalized_dataset, args.seq2sent_dataset)
     if not args.no_normalize:
         preprocessor.make_normalized_dataset(args.override, args.filter_lines)
     if not args.no_seq2sent:
