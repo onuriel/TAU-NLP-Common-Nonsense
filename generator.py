@@ -1,6 +1,6 @@
 import data_constants
-import data_utils
 import data_loader
+from language_index import LanguageIndex
 import utils
 import Model
 import tensorflow as tf
@@ -64,8 +64,8 @@ if __name__ == '__main__':
     logging.info('Loading sequence to sentence dataset from {}'.format(args.seq2sent_dataset))
     input_sents, target_sents = data_loader.load_sequence_to_sentence_dataset(args.seq2sent_dataset)
     logging.info('Done loading')
-    inp_lang = data_utils.LanguageIndex(input_sents)
-    targ_lang = data_utils.LanguageIndex(target_sents)
+    inp_lang = LanguageIndex(input_sents)
+    targ_lang = LanguageIndex(target_sents)
     embedding_dim = 256
     units = 1024
     encoder = Model.Encoder(embedding_dim, units, inp_lang)

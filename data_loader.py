@@ -1,7 +1,7 @@
 import data_constants
 import data.uri as uri_helper
 import pandas as pd
-from data_utils import LanguageIndex
+from language_index import LanguageIndex
 
 
 def load_normalized_dataset(h5_path=data_constants.DEFAULT_NORMALIZED_DATASET_PATH):

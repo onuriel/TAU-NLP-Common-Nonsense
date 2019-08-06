@@ -1,8 +1,7 @@
 import tensorflow as tf
 from tensorflow.contrib.learn.python.learn.estimators._sklearn import train_test_split
-
-import data_utils
 import data_loader
+from language_index import LanguageIndex
 import Model
 
 BATCH_SIZE = 64
@@ -38,8 +37,8 @@ def main():
     # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     # Creating training and validation sets using an 80-20 split
     input_sents, target_sents = data_loader.load_sequence_to_sentence_dataset()
-    inp_lang = data_utils.LanguageIndex(input_sents)
-    targ_lang = data_utils.LanguageIndex(target_sents)
+    inp_lang = LanguageIndex(input_sents)
+    targ_lang = LanguageIndex(target_sents)
 
     embedding_dim = 256
     units = 1024
