@@ -40,27 +40,7 @@ def main():
     input_sents, target_sents = data_loader.load_sequence_to_sentence_dataset()
     inp_lang = data_utils.LanguageIndex(input_sents)
     targ_lang = data_utils.LanguageIndex(target_sents)
-    create_train_val_dataset(input_sents, target_sents, inp_lang, targ_lang)
-    input_tensor = [[inp_lang.word2idx[s] for s in sent.split(' ')] for sent in input_sents]
-    target_tensor = [[targ_lang.word2idx[s] for s in sent.split(' ')] for sent in target_sents]
-    input_tensor = tf.keras.preprocessing.sequence.pad_sequences(input_tensor,
-                                                                 maxlen=inp_lang.max_sentence_length,
-                                                                 padding='post')
 
-    target_tensor = tf.keras.preprocessing.sequence.pad_sequences(target_tensor,
-                                                                  maxlen=targ_lang.max_sentence_length,
-                                                                  padding='post')
-    input_tensor_train, input_tensor_val, target_tensor_train, target_tensor_val = train_test_split(input_tensor,
-                                                                                                    target_tensor,
-                                                                                                    test_size=0.2,
-                                                                                                    random_state=42)
-
-    # Show length
-    print(len(input_tensor_train), len(target_tensor_train), len(input_tensor_val), len(target_tensor_val))
-
-    BUFFER_SIZE = len(input_tensor_train)
-    BATCH_SIZE = 64
-    N_BATCH = BUFFER_SIZE // BATCH_SIZE
     embedding_dim = 256
     units = 1024
     train_dataset, val_dataset = create_train_val_dataset(input_sents, target_sents, inp_lang, targ_lang)
@@ -69,11 +49,11 @@ def main():
 
     optimizer = tf.compat.v1.train.AdamOptimizer()
     model = Model.GraphToText(decoder, encoder, optimizer)
-    # model.train(train_dataset, epochs=10, batch_size=BATCH_SIZE)
-    for i in range(6):
-        model.load_from_checkpoint('ckpt-'+str(i))
-        result = model.evaluate_loss_on_dataset(val_dataset.take(400))
-        print(result)
+    model.train(train_dataset, None, epochs=10, batch_size=BATCH_SIZE)
+    #for i in range(6):
+    #    model.load_from_checkpoint('ckpt-'+str(i))
+    #    result = model.evaluate_loss_on_dataset(val_dataset.take(400))
+    #    print(result)
 
 
 if __name__ == '__main__':
