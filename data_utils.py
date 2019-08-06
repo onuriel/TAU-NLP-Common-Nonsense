@@ -98,12 +98,6 @@ class _PreProcessor:
         sys.exit(1)
 
 
-def create_langauge_index(lang='en'):
-    embeddings = data_loader.load_numberbatch(lang=lang)
-    words = embeddings.index.map(uri_helper.uri_to_label).values
-    return LanguageIndex(words)
-
-
 class LanguageIndex:
     def __init__(self, lang):
         self.lang = lang
