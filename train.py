@@ -40,6 +40,8 @@ if __name__ == '__main__':
                         version='%(prog)s {version}'.format(version=data_constants.VERSION))
     parser.add_argument('-sd', '--seq2sent_dataset', default=data_constants.DEFAULT_SEQ2SENT_DATASET_PATH,
                         help='Path to seq2sent ConceptNet dataset')
+    parser.add_argument('-cp', '--checkpoints_dir', default=data_constants.DEFAULT_CHECKPOINTS_PATH,
+                        help='Path to model checkpoints dir')
     parser.add_argument('-e', '--epochs', type=utils.positive_int, default=10, help='Number of epochs to train')
     parser.add_argument('--eval', action='store_true', help='Evaluate loss on validation dataset during training')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
@@ -58,7 +60,7 @@ if __name__ == '__main__':
     logging.info('Creating Model')
     inp_lang = LanguageIndex(input_sents)
     targ_lang = LanguageIndex(target_sents)
-    model = Model.make_basic_model(inp_lang, targ_lang)
+    model = Model.make_basic_model(inp_lang, targ_lang, args.checkpoints_dir)
     logging.info('Model is ready')
 
     logging.info('Creating train and evaluation datasets')

@@ -44,6 +44,8 @@ if __name__ == '__main__':
                         help='Path to normalized ConceptNet dataset')
     parser.add_argument('-sd', '--seq2sent_dataset', default=data_constants.DEFAULT_SEQ2SENT_DATASET_PATH,
                         help='Path to seq2sent ConceptNet dataset')
+    parser.add_argument('-cp', '--checkpoints_dir', default=data_constants.DEFAULT_CHECKPOINTS_PATH,
+                        help='Path to model checkpoints dir')
     parser.add_argument('-o', '--out', default=data_constants.DEFAULT_GENERATED_SENTENCES_PATH,
                         help='Path to output generated sentences file')
     parser.add_argument('-n', '--num_of_sentences', type=utils.positive_int, default=2000,
@@ -69,7 +71,7 @@ if __name__ == '__main__':
     logging.info('Creating Model')
     inp_lang = LanguageIndex(input_sents)
     targ_lang = LanguageIndex(target_sents)
-    graph2text = Model.make_basic_model(inp_lang, targ_lang)
+    graph2text = Model.make_basic_model(inp_lang, targ_lang, args.checkpoints_dir)
     logging.info('Model is ready')
 
     logging.info('Generating {} random sentences'.format(args.num_of_sentences))
