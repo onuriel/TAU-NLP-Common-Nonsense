@@ -33,6 +33,7 @@ class NegativeSamplesGenerator:
 
 
 if __name__ == '__main__':
+    tf.compat.v1.enable_eager_execution()
     # import os
     # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
     # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -57,23 +58,22 @@ if __name__ == '__main__':
                         level=logging.DEBUG if args.verbose else logging.INFO)
     logging.info('Starting with args: {}'.format(vars(args)))
 
-    tf.compat.v1.enable_eager_execution()
     logging.info('Loading normalized dataset from {}'.format(args.normalized_dataset))
     dataset = data_loader.load_normalized_dataset(args.normalized_dataset)
     logging.info('Done loading')
+
     logging.info('Loading sequence to sentence dataset from {}'.format(args.seq2sent_dataset))
     input_sents, target_sents = data_loader.load_sequence_to_sentence_dataset(args.seq2sent_dataset)
     logging.info('Done loading')
+
+    logging.info('Creating Model')
     inp_lang = LanguageIndex(input_sents)
     targ_lang = LanguageIndex(target_sents)
-    embedding_dim = 256
-    units = 1024
-    encoder = Model.Encoder(embedding_dim, units, inp_lang)
-    decoder = Model.Decoder(embedding_dim, units, targ_lang)
-    optimizer = tf.compat.v1.train.AdamOptimizer()
-    graph2text = Model.GraphToText(decoder, encoder, optimizer)
-    generator = NegativeSamplesGenerator(graph2text, dataset)
+    graph2text = Model.make_basic_model(inp_lang, targ_lang)
+    logging.info('Model is ready')
+
     logging.info('Generating {} random sentences'.format(args.num_of_sentences))
+    generator = NegativeSamplesGenerator(graph2text, dataset)
     random_sequences, random_sentences = generator.generate_random_sentences(args.num_of_sentences,
                                                                              np.random.RandomState(args.random_seed))
     logging.info('Done generating, will write outputs to {}'.format(args.out))

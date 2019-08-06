@@ -33,21 +33,15 @@ def create_train_val_dataset(input_sents, target_sents, inp_lang, targ_lang):
 
 def main():
     tf.compat.v1.enable_eager_execution()
+    # import os
     # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
     # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-    # Creating training and validation sets using an 80-20 split
     input_sents, target_sents = data_loader.load_sequence_to_sentence_dataset()
     inp_lang = LanguageIndex(input_sents)
     targ_lang = LanguageIndex(target_sents)
-
-    embedding_dim = 256
-    units = 1024
     train_dataset, val_dataset = create_train_val_dataset(input_sents, target_sents, inp_lang, targ_lang)
-    encoder = Model.Encoder(embedding_dim, units, inp_lang)
-    decoder = Model.Decoder(embedding_dim, units, targ_lang)
 
-    optimizer = tf.compat.v1.train.AdamOptimizer()
-    model = Model.GraphToText(decoder, encoder, optimizer)
+    model = Model.make_basic_model(inp_lang, targ_lang)
     model.train(train_dataset, None, epochs=10, batch_size=BATCH_SIZE)
     #for i in range(6):
     #    model.load_from_checkpoint('ckpt-'+str(i))

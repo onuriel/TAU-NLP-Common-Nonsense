@@ -5,7 +5,14 @@ import numpy as np
 import os
 
 
-def gru(units):
+def make_basic_model(inp_lang, targ_lang, embedding_dim = 256, units = 1024):
+    encoder = Encoder(embedding_dim, units, inp_lang)
+    decoder = Decoder(embedding_dim, units, targ_lang)
+    optimizer = tf.compat.v1.train.AdamOptimizer()
+    return GraphToText(decoder, encoder, optimizer)
+
+
+def make_gru(units):
     # If you have a GPU, we recommend using CuDNNGRU(provides a 3x speedup than GRU)
     # the code automatically does that.
     if tf.test.is_gpu_available():
@@ -28,7 +35,7 @@ class Encoder(tf.keras.Model):
         vocab_size = len(lang.word2idx)
         self.enc_units = enc_units
         self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
-        self.gru = gru(self.enc_units)
+        self.gru = make_gru(self.enc_units)
         self.lang = lang
 
     def call(self, x, hidden):
@@ -48,7 +55,7 @@ class Decoder(tf.keras.Model):
         vocab_size = len(lang.word2idx)
         self.dec_units = dec_units
         self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
-        self.gru = gru(self.dec_units)
+        self.gru = make_gru(self.dec_units)
         self.fc = tf.keras.layers.Dense(vocab_size)
         self.lang = lang
         # used for attention
