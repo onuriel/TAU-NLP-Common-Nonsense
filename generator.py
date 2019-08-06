@@ -50,7 +50,7 @@ if __name__ == '__main__':
                         help='Path to output generated sentences file')
     parser.add_argument('-n', '--num_of_sentences', type=utils.positive_int, default=2000,
                         help='Number of sentences to generate')
-    parser.add_argument('-r', '--random_state', type=int, help='Random state (seed) to use')
+    parser.add_argument('-r', '--random_seed', type=int, help='Random seed to use')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
     args = parser.parse_args()
     # Suppressing absl logger - see https://github.com/tensorflow/tensorflow/issues/26691#issuecomment-507420022
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     generator = NegativeSamplesGenerator(graph2text, dataset)
     logging.info('Generating {} random sentences'.format(args.num_of_sentences))
     random_sequences, random_sentences = generator.generate_random_sentences(args.num_of_sentences,
-                                                                             args.random_state)
+                                                                             np.random.RandomState(args.random_seed))
     logging.info('Done generating, will write outputs to {}'.format(args.out))
     with open(args.out, 'w', encoding='utf-8') as f:
         for seq, sent in zip(random_sequences, random_sentences):
