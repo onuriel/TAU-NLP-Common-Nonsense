@@ -4,6 +4,6 @@ __pycache__
 *.pyc
 #Ignore input and output files
 out/*
-training_checkpoint/*
+training_checkpoints/*
 *.h5
 *.gz
