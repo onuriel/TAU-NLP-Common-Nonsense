@@ -38,12 +38,15 @@ class SentencesRank:
     @staticmethod
     def edges_to_tuples(edges):
         logging.info('Turning edges (sequences) to tuples')
-        edges_tuples = []
+        data = data_loader.load_normalized_dataset()
+        relations = data['relation'].unique().tolist()
+        tuples = []
         for edge in edges:
-            words = edge.split(' ')
-            relation_idx = next(idx for idx, word in enumerate(words) if word[0].isupper())
-            edges_tuples.append((words[:relation_idx], [words[relation_idx]], words[relation_idx+1:]))
-        return edges_tuples
+            for relation in relations:
+                if relation in edge:
+                    subject, object_ = edge.split(relation)
+                    tuples.append((subject.split(' '), relation, object_.strip().split(' ')))
+        return tuples
     
     def get_cosine_similarity(self, edges_tuples):
         logging.info('Calculating cosine similarity for each edge tuple')
