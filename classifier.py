@@ -8,6 +8,8 @@ from bert import tokenization
 import tensorflow as tf
 import pandas as pd
 import rank
+import data_constants
+import argparse
 
 DATA_COLUMN = 'sentences'
 LABEL_COLUMN = 'label'
@@ -61,7 +63,7 @@ def create_model(is_predicting, input_ids, input_mask, segment_ids, labels,
 
     hidden_size = output_layer.shape[-1].value
 
-    # Create our own layer to tune for politeness data.
+    # Create our own layer to tune for commonsense data.
     output_weights = tf.get_variable(
       "output_weights", [num_labels, hidden_size],
       initializer=tf.truncated_normal_initializer(stddev=0.02))
@@ -250,16 +252,29 @@ def train(train, val):
 
 if __name__ == '__main__':
 
-    conceptnet_sentences = pd.read_csv('out/conceptnet_sentences.csv')['text']
-    edges, sentences = rank.SentencesRank.load_sentences('out/generated_sentences-5.7.0.txt')
-    sentences = sentences[:1000]
-    print(len(sentences), len(conceptnet_sentences))
+    import os
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+    parser = argparse.ArgumentParser(description='Fine tuning Bert')
+    parser.add_argument('-i',
+                        '--input', default='c', help='c for conceptnet sentences and g for generated conceptnet sentences from our sequence to sentences generator')
+    args = parser.parse_args()
+    if args.input == 'c':
+        conceptnet_sentences = pd.read_hdf(data_constants.DEFAULT_CONCEPTNET_DATASET)['sentence']
+    else:
+        conceptnet_sentences = pd.read_hdf(data_constants.DEFAULT_CONCEPTNET_GENERATED_DATASET)['sentence']
+
+    generated_sentences = pd.read_hdf(data_constants.DEFAULT_RANDOM_GENERATED_DATASET)['sentence']
+
+
     conceptnet_df = pd.DataFrame(conceptnet_sentences.tolist(), columns=[DATA_COLUMN])
     conceptnet_df[LABEL_COLUMN] = 1
-    gen_df = pd.DataFrame(sentences, columns=[DATA_COLUMN])
+    gen_df = pd.DataFrame(generated_sentences.tolist(), columns=[DATA_COLUMN])
     gen_df[LABEL_COLUMN] = 0
     df = pd.concat((conceptnet_df, gen_df))
-    train_data, test_data = train_test_split(df, test_size=0.2)
+    print(len(df))
+    train_data, test_data = train_test_split(df, test_size=0.1)
     print(test_data[:10])
     print(train_data[-10:])
     train(train_data, test_data)

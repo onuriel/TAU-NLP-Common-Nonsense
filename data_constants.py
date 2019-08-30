@@ -12,3 +12,6 @@ DEFAULT_NORMALIZED_DATASET_PATH = 'out/normalized_conceptnet-{}.h5'.format(CONCE
 DEFAULT_SEQ2SENT_DATASET_PATH = 'out/seq2sent_conceptnet-{}.h5'.format(CONCEPTNET_VERSION)
 DEFAULT_GENERATED_SENTENCES_PATH = 'out/generated_sentences-{}.txt'.format(CONCEPTNET_VERSION)
 DEFAULT_RANKED_SENTENCES_PATH = 'out/ranked_sentences-{}.txt'.format(CONCEPTNET_VERSION)
+DEFAULT_CONCEPTNET_DATASET = 'data/conceptnet_dataset1.h5'
+DEFAULT_CONCEPTNET_GENERATED_DATASET = 'data/conceptnet_dataset2.h5'
+DEFAULT_RANDOM_GENERATED_DATASET = 'data/generated_dataset.h5'
